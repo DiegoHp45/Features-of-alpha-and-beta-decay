@@ -1,0 +1,13 @@
+This code ganatares the initial thermodynamic trajectories that will be evolve using WinNet.
+The parameters used as initial conditions are:
+
+Temperature         = T_0
+Entropy_per_baryon  = s_0
+Electron_fraction   = Y_e,0
+
+WinNet nuclear reation network uses as thermodynamic input a trajectory specifying 4 columns
+
+#time[s],    T9[GK], density[g/cm^3],    R[Km],  Y_e
+
+In this code we will take (T_0,s_0 and Ye0) and evolve 1ms the T9, rho, R and Ye.
+
