@@ -1,13 +1,30 @@
-This code ganatares the initial thermodynamic trajectories that will be evolve using WinNet.
-The parameters used as initial conditions are:
+Initial conditions: parametric NSM-ejecta trajectories for WinNet
+=================================================================
 
-Temperature         = T_0
-Entropy_per_baryon  = s_0
-Electron_fraction   = Y_e,0
+Free parameters per trajectory: Ye0, s0 [kB/baryon], v_inf [c].
+Fixed: T0 = 7 GK, R0 = 50 km.
 
-WinNet nuclear reation network uses as thermodynamic input a trajectory specifying 4 columns
+  rho0 : solves s_ion(NSE) + s_e+-(T0, rho Ye) + s_gamma(T0, rho) = s0
+         NSE from WinNet's own nuclear data (../Nuclear_data/winvne_v2.0.dat),
+         e+- and photon entropy from the Helmholtz EOS (Timmes & Swesty 2000).
+  tau  : e R0 / (3 v_inf)   (late homologous branch moves at v_inf)
+  rho(t) = rho0 exp(-t/tau)            t <= 3 tau
+         = rho0 (3 tau / (e t))^3      t >= 3 tau
+  R(t)   = R0 (rho0 / rho)^(1/3)
 
-#time[s],    T9[GK], density[g/cm^3],    R[Km],  Y_e
+Files
+-----
+initial_state.py     NSE solver (winvne), ion entropy, Helmholtz wrapper, rho0 root find
+make_ensemble.py     Sobol sample (2^10) of (Ye0, s0, v_inf) -> Trajectories_ensemble/
+plot_rho0_map.py     heat maps of rho0 and NSE composition on (s0, Ye0) -> ../Figures/
+rho0_grid_T7GK.npz   cached grid for the heat maps
+HelmholtzEOS/        Timmes Helmholtz EOS; run_helm.f90 = batch entropy driver
+Trajectories_ensemble/  trajNNNN.dat (time[s] T9 rho[g/cm3] R[km] Ye) + trajectories_index.csv
 
-In this code we will take (T_0,s_0 and Ye0) and evolve 1ms the T9, rho, R and Ye.
+Run (from this folder, with the project venv ../.venv)
+---
+../.venv/bin/python make_ensemble.py           # ~2 min
+../.venv/bin/python plot_rho0_map.py           # add --recompute to rebuild the grid (~1 min)
 
+Build run_helm.exe (if needed), in HelmholtzEOS/:
+awk 'NR>43' helmholtz.f90 > .helm_lib.f90 && gfortran -O2 -ffree-line-length-none run_helm.f90 .helm_lib.f90 -o run_helm.exe && rm .helm_lib.f90
